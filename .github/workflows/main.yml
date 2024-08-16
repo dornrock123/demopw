@@ -35,7 +35,7 @@ jobs:
 
       - name: Start the app
         run: |
-          npx http-server -p 4200 ./dist/your-angular-app &
+          npm start &
           npx wait-on http://localhost:4200
         env:
           PORT: 4200
