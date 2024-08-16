@@ -30,6 +30,21 @@ jobs:
       - name: install playwright
         run: npx playwright install
 
+      - name: ตรวจสอบไฟล์ทดสอบสำหรับ Angular component ใหม่
+        run: |
+          #!/bin/bash
+
+          # ค้นหา Angular components ในโฟลเดอร์ src/app และตรวจสอบไฟล์เทสในโฟลเดอร์ test
+          for component in src/app/**/*.component.ts; do
+            basename=$(basename "$component" .component.ts)
+            test_file="test/${basename}.test.ts"
+
+            if [ ! -f "$test_file" ]; then
+              echo "คำเตือน: ไม่พบไฟล์ทดสอบสำหรับ component ${basename} ที่ ${test_file}"
+              exit 1
+            fi
+          done
+
       - name: Start the app
         run: |
           npm start &
