@@ -14,7 +14,7 @@ test.describe('Circle Link Component Tests', () => {
 
     // ตรวจสอบลิงก์แรก
     const firstLink = circleLinks.nth(0);
-    await expect(firstLink).toHaveAttribute('href', 'https://www.meetup.com/find/?keywords=angular');
+    await expect(firstLink).toHaveAttribute('href', 'https://www.meetu.com/find/?keywords=angular');
     await expect(firstLink).toHaveAttribute('title', 'Find a Local Meetup');
     await expect(firstLink.locator('title')).toHaveText('Meetup Logo');
 
