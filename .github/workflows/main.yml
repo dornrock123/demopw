@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: npm install --force
 
-      - name: install playwright
+      - name: Install Playwright
         run: npx playwright install
 
       - name: Build the Angular app
@@ -40,14 +40,19 @@ jobs:
         env:
           PORT: 4200
 
-      - name: Run Playwright tests
+      - name: Run Playwright tests and check results
+        id: run-tests
         run: |
-          npx playwright test --output=results.json || true
-        continue-on-error: true
-        id: test
+          npx playwright test --output=results.json || exit 1
+          if grep -q '"status": "failed"' results.json; then
+            echo "Tests failed."
+            exit 1
+          else
+            echo "Tests passed."
+          fi
 
       - name: Upload test results
-        if: always()  # This ensures the artifact is uploaded regardless of the test result
+        if: always()  # Upload artifact regardless of the test result
         uses: actions/upload-artifact@v3
         with:
           name: playwright-results
@@ -56,7 +61,7 @@ jobs:
   notify:
     needs: e2e
     runs-on: ubuntu-latest
-    if: needs.e2e.result == 'failure' # Ensure this job runs only if the previous job failed
+    if: needs.e2e.result == 'failure'  # Ensure this job runs only if the e2e job failed
     steps:
       - name: Send email notification
         uses: dawidd6/action-send-mail@v3
