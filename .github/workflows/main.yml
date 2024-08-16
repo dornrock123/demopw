@@ -56,19 +56,6 @@ jobs:
           name: playwright-results
           path: results.json
 
-      - name: Debug email step
-        if: failure()
-        run: |
-          echo "SMTP Server: smtp.example.com"
-          echo "SMTP Port: 587"
-          echo "Email Username: ${{ secrets.EMAIL_USERNAME }}"
-          echo "Email Password: ${{ secrets.EMAIL_PASSWORD }}"
-          echo "Subject: Playwright Test Failure Notification"
-          echo "To: ditoey2002@gmail.com"
-          echo "From: sender@example.com"
-          echo "Body: Playwright tests have failed. Please check the attached results for more information."
-          echo "Attachments: results.json"
-
       - name: Send email if tests fail
         if: failure()
         uses: dawidd6/action-send-mail@v3
