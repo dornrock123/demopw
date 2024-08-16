@@ -41,11 +41,16 @@ jobs:
           PORT: 4200
 
       - name: Run Playwright tests
-        run: npx playwright test
+        run: |
+          npx playwright test --reporter=json > results.json
         continue-on-error: true
 
+      - name: Check for results.json
+        run: |
+          if [ -f results.json ]; then echo "results.json exists."; else echo "results.json does not exist."; fi
+
       - name: Upload test results
-        if: failure()
+        if: failure() && always()
         uses: actions/upload-artifact@v3
         with:
           name: playwright-results
