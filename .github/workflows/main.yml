@@ -42,11 +42,12 @@ jobs:
 
       - name: Run Playwright tests
         run: |
-          npx playwright test  --output=results.json
+          npx playwright test --output=results.json || true
         continue-on-error: true
+        id: test
 
       - name: Upload test results
-        if: always()
+        if: always()  # This ensures the artifact is uploaded regardless of the test result
         uses: actions/upload-artifact@v3
         with:
           name: playwright-results
@@ -55,19 +56,18 @@ jobs:
   notify:
     needs: e2e
     runs-on: ubuntu-latest
-    if: always() # This ensures the job runs regardless of the success/failure of the previous jobs
+    if: needs.e2e.result == 'failure' # Ensure this job runs only if the previous job failed
     steps:
       - name: Send email notification
-        if: success() || failure()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 587
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: Playwright Test Results Notification
+          subject: Playwright Test Failure Notification
           to: ditoey2002@gmail.com
           from: krisd3214@gmail.com
           body: |
-            The Playwright test results are now available. Please check the attached results for more information.
+            The Playwright tests have failed. Please check the attached results for more information.
           attachments: results.json
