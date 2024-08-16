@@ -42,12 +42,8 @@ jobs:
 
       - name: Run Playwright tests
         run: |
-          npx playwright test --reporter=json --output=results.json
+          npx playwright test  --output=results.json
         continue-on-error: true
-
-      - name: Check for results.json
-        run: |
-          if [ -f results.json ]; then echo "results.json exists."; else echo "results.json does not exist."; fi
 
       - name: Upload test results
         if: always()
@@ -56,17 +52,22 @@ jobs:
           name: playwright-results
           path: results.json
 
-      - name: Send email if tests fail
-        if: failure()
+  notify:
+    needs: e2e
+    runs-on: ubuntu-latest
+    if: always() # This ensures the job runs regardless of the success/failure of the previous jobs
+    steps:
+      - name: Send email notification
+        if: success() || failure()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.example.com
           server_port: 587
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: Playwright Test Failure Notification
+          subject: Playwright Test Results Notification
           to: ditoey2002@gmail.com
           from: sender@example.com
           body: |
-            Playwright tests have failed. Please check the attached results for more information.
+            The Playwright test results are now available. Please check the attached results for more information.
           attachments: results.json
