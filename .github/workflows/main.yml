@@ -40,11 +40,11 @@ jobs:
         env:
           PORT: 4200
 
-      - name: Run Playwright tests and check results
+      - name: Run Playwright tests
         id: run-tests
         run: |
           npx playwright test --output=results.json || exit 1
-          if grep -q '"status": "failed"' results.json; then
+          if jq -e '.[] | select(.status == "failed")' results.json > /dev/null; then
             echo "Tests failed."
             exit 1
           else
@@ -61,7 +61,7 @@ jobs:
   notify:
     needs: e2e
     runs-on: ubuntu-latest
-    if: needs.e2e.result == 'failure'  # Ensure this job runs only if the e2e job failed
+    if: failure()  # Ensure this job runs only if the e2e job failed
     steps:
       - name: Send email notification
         uses: dawidd6/action-send-mail@v3
