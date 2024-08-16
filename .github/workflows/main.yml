@@ -67,7 +67,7 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: Playwright Test Results Notification
           to: ditoey2002@gmail.com
-          from: sender@example.com
+          from: krisd3214@gmail.com
           body: |
             The Playwright test results are now available. Please check the attached results for more information.
           attachments: results.json
