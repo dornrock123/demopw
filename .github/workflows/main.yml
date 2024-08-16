@@ -42,7 +42,7 @@ jobs:
 
       - name: Run Playwright tests
         run: |
-          npx playwright test --reporter=json > results.json
+          npx playwright test --reporter=json --output=results.json
         continue-on-error: true
 
       - name: Check for results.json
@@ -50,7 +50,7 @@ jobs:
           if [ -f results.json ]; then echo "results.json exists."; else echo "results.json does not exist."; fi
 
       - name: Upload test results
-        if: failure() && always()
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: playwright-results
