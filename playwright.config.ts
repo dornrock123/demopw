@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './tests', //กำหนดที่ตั้งของไฟล์ script ที่เขียน
+  testDir: './src/app', //กำหนดที่ตั้งของไฟล์ script ที่เขียน
   fullyParallel: true,
   // forbidOnly: !!process.env.CI,
   // retries: process.env.CI ? 2 : 0,
