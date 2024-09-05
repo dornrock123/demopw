@@ -1,45 +1,68 @@
-name: Playwright Tests
+name: Run API, Web, and Playwright Tests
 
 on:
   push:
     branches:
-      - main
+      - dorn-ci
   pull_request:
     branches:
-      - main
+      - dorn-ci
+      
+  workflow_dispatch:
+    inputs:
+      api_branch:
+        description: 'API branch to checkout'
+        required: true
+        default: 'main'
+      web_branch:
+        description: 'Web branch to checkout'
+        required: true
+        default: 'dorn-ci'
 
 jobs:
-  e2e:
+  run-api:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout API repository
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.api_branch || 'main' }}
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '17'
+      - name: Build and Run Spring Boot API
+        run: |
+          mvn clean install
+          nohup mvn spring-boot:run > /dev/null 2>&1 &
 
+  run-web-and-test:
+    needs: run-api
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Web repository
+        uses: actions/checkout@v3
+        with:
+          repository: Theerapat-dev/PresidentDemo-Web
+          token: ${{ secrets.GH_PAT }}
+          ref: ${{ github.event.inputs.web_branch || 'dorn-ci' }}
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-
+          node-version: '16'
       - name: Set npm registry
         run: npm config set registry https://registry.npmjs.org/
-
       - name: Install dependencies
         run: npm install --force
-
-      - name: Install Playwright
-        run: npx playwright install
-
-      - name: Build the Angular app
-        run: npm run build
-
       - name: Start the app
         run: |
           npm start &
           npx wait-on http://localhost:4200
         env:
           PORT: 4200
-
+      - name: Install Playwright
+        run: npx playwright install
       - name: Run Playwright tests
         id: run-tests
         run: |
@@ -50,18 +73,17 @@ jobs:
           else
             echo "Tests passed."
           fi
-
       - name: Upload test results
-        if: always()  # Upload artifact regardless of the test result
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: playwright-results
           path: results.json
 
   notify:
-    needs: e2e
+    needs: run-web-and-test
     runs-on: ubuntu-latest
-    if: failure()  # Ensure this job runs only if the e2e job failed
+    if: failure()
     steps:
       - name: Send email notification
         uses: dawidd6/action-send-mail@v3
